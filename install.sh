@@ -10,19 +10,25 @@ echo "=== Claude Code Portable Installer ==="
 echo ""
 
 # -------------------------------------------------------
-# Step 1: Clone ECC if not present
+# Step 1: Install GSD (get-shit-done-cc)
+# -------------------------------------------------------
+echo "[1/4] Installing get-shit-done-cc..."
+npm install -g get-shit-done-cc
+
+# -------------------------------------------------------
+# Step 2: Clone ECC if not present
 # -------------------------------------------------------
 if [ -d "$ECC_DIR/.git" ]; then
-  echo "[1/3] ECC already at $ECC_DIR"
+  echo "[2/4] ECC already at $ECC_DIR"
 else
-  echo "[1/3] Cloning everything-claude-code..."
+  echo "[2/4] Cloning everything-claude-code..."
   git clone https://github.com/affaan-m/everything-claude-code.git "$ECC_DIR"
 fi
 
 # -------------------------------------------------------
 # Step 2: Copy custom files into ~/.claude/
 # -------------------------------------------------------
-echo "[2/3] Copying custom files..."
+echo "[3/4] Copying custom files..."
 
 mkdir -p "$CLAUDE_DIR"
 
@@ -62,7 +68,7 @@ done
 # -------------------------------------------------------
 # Step 3: Generate settings.json
 # -------------------------------------------------------
-echo "[3/3] Generating settings.json..."
+echo "[4/4] Generating settings.json..."
 
 if [ -f "$CLAUDE_DIR/settings.json" ]; then
   cp "$CLAUDE_DIR/settings.json" "$CLAUDE_DIR/settings.json.bak.$(date +%s)"
