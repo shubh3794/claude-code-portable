@@ -5,54 +5,81 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 HOOKS_DIR="$CLAUDE_DIR/hooks"
 
-echo "Installing Claude Code portable config..."
+echo "=== Claude Code Portable Installer ==="
+echo ""
 echo "  Source: $SCRIPT_DIR"
 echo "  Target: $CLAUDE_DIR"
 echo ""
 
-# --- Safety: never clobber an existing setup without confirmation ---
-if [ -f "$CLAUDE_DIR/settings.json" ]; then
-  read -p "~/.claude/settings.json already exists. Overwrite? [y/N] " confirm
-  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-    echo "Aborting. Existing setup untouched."
-    exit 0
+# -------------------------------------------------------
+# Step 1: Install ECC (everything-claude-code) if missing
+# -------------------------------------------------------
+if [ ! -f "$CLAUDE_DIR/ecc/install-state.json" ]; then
+  echo "[1/4] ECC not found. Installing everything-claude-code..."
+  if command -v claude &>/dev/null; then
+    echo "  Run:  claude plugins install everything-claude-code"
+    echo "  Then re-run this script."
+  else
+    echo "  Install Claude Code first: https://docs.anthropic.com/en/docs/claude-code"
   fi
-  # Back up the existing settings
-  cp "$CLAUDE_DIR/settings.json" "$CLAUDE_DIR/settings.json.bak.$(date +%s)"
-  echo "  Backed up existing settings.json"
+  exit 1
+else
+  echo "[1/4] ECC already installed. Skipping."
 fi
 
-mkdir -p "$CLAUDE_DIR"
+# -------------------------------------------------------
+# Step 2: Back up existing settings.json
+# -------------------------------------------------------
+if [ -f "$CLAUDE_DIR/settings.json" ]; then
+  BACKUP="$CLAUDE_DIR/settings.json.bak.$(date +%s)"
+  cp "$CLAUDE_DIR/settings.json" "$BACKUP"
+  echo "[2/4] Backed up settings.json → $(basename "$BACKUP")"
+else
+  echo "[2/4] No existing settings.json. Fresh install."
+fi
 
-# --- Copy portable directories ---
+# -------------------------------------------------------
+# Step 3: Copy custom files (overlay on top of ECC)
+# -------------------------------------------------------
+echo "[3/4] Copying custom files..."
+
 for dir in hooks rules agents commands get-shit-done skills; do
   if [ -d "$SCRIPT_DIR/$dir" ]; then
-    echo "  Copying $dir/"
-    mkdir -p "$CLAUDE_DIR/$dir"
-    cp -R "$SCRIPT_DIR/$dir/"* "$CLAUDE_DIR/$dir/" 2>/dev/null || true
+    # Use rsync to merge without deleting ECC files
+    if command -v rsync &>/dev/null; then
+      rsync -a "$SCRIPT_DIR/$dir/" "$CLAUDE_DIR/$dir/"
+    else
+      cp -R "$SCRIPT_DIR/$dir/"* "$CLAUDE_DIR/$dir/" 2>/dev/null || true
+    fi
+    count=$(find "$SCRIPT_DIR/$dir" -type f | wc -l | tr -d ' ')
+    echo "  $dir/ ($count files)"
   fi
 done
 
-# --- Copy CLAUDE.md ---
 if [ -f "$SCRIPT_DIR/CLAUDE.md.d/CLAUDE.md" ]; then
-  echo "  Copying CLAUDE.md"
   cp "$SCRIPT_DIR/CLAUDE.md.d/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
+  echo "  CLAUDE.md"
 fi
 
-# --- Fix ALL hardcoded home paths in copied files ---
-# GSD files, ccg-skills.md, agents, etc. may contain /Users/<original-user>/.claude/
-# Replace with the current user's path.
-echo "  Fixing hardcoded paths → $CLAUDE_DIR/"
-find "$CLAUDE_DIR/rules" "$CLAUDE_DIR/get-shit-done" "$CLAUDE_DIR/agents" "$CLAUDE_DIR/commands" "$CLAUDE_DIR/skills" \
+# -------------------------------------------------------
+# Step 3b: Fix hardcoded home paths in all .md files
+# -------------------------------------------------------
+echo "  Fixing hardcoded paths..."
+find "$CLAUDE_DIR/get-shit-done" "$CLAUDE_DIR/agents" "$CLAUDE_DIR/commands" "$CLAUDE_DIR/skills" "$CLAUDE_DIR/rules" \
   -type f -name '*.md' 2>/dev/null | while read -r f; do
   if grep -q '/Users/[^/]*/.claude/' "$f" 2>/dev/null; then
-    sed -i.bak "s|/Users/[^/]*/.claude/|$CLAUDE_DIR/|g" "$f"
-    rm -f "${f}.bak"
+    if [[ "$OSTYPE" == darwin* ]]; then
+      sed -i '' "s|/Users/[^/]*/.claude/|$CLAUDE_DIR/|g" "$f"
+    else
+      sed -i "s|/Users/[^/]*/.claude/|$CLAUDE_DIR/|g" "$f"
+    fi
   fi
 done
 
-# --- Generate settings.json with correct paths ---
-echo "  Generating settings.json (hooks → $HOOKS_DIR)"
+# -------------------------------------------------------
+# Step 4: Generate settings.json with resolved paths
+# -------------------------------------------------------
+echo "[4/4] Generating settings.json..."
 
 cat > "$CLAUDE_DIR/settings.json" << SETTINGS_EOF
 {
@@ -164,18 +191,7 @@ cat > "$CLAUDE_DIR/settings.json" << SETTINGS_EOF
 }
 SETTINGS_EOF
 
-# --- Fix any hardcoded home paths inside hooks that use os.homedir() ---
-# The hooks already use os.homedir() so they're portable. Verify:
-HARDCODED=$(grep -rl '/Users/shaggarw' "$HOOKS_DIR" 2>/dev/null || true)
-if [ -n "$HARDCODED" ]; then
-  echo ""
-  echo "  WARNING: These hooks contain hardcoded paths (may need manual fix):"
-  echo "$HARDCODED" | sed 's/^/    /'
-fi
-
 echo ""
-echo "Done! Installed to $CLAUDE_DIR"
+echo "Done! Your setup is live at $CLAUDE_DIR"
 echo ""
-echo "Next steps:"
-echo "  1. Install plugins:  claude plugins install gopls-lsp@claude-plugins-official"
-echo "  2. Verify:           claude --version && ls ~/.claude/settings.json"
+echo "Verify: claude --version"
