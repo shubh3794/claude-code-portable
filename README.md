@@ -23,6 +23,21 @@ ECC hooks fire automatically when you pass `--plugin-dir` — they don't need to
 
 Run `/hooks` inside a Claude session to see all active hooks and their source.
 
+## What the hooks do
+
+**Hierarchical context loading** — The `project-rules-loader` SessionStart hook detects the project language (Python, Go, TypeScript, Rust, Java) and tells Claude to load only the relevant language-specific rules. Rules are not bulk-loaded into context — Claude reads them on demand, keeping the context window lean.
+
+**Autonomous agents at each workflow phase** — Stop hooks monitor what just happened and automatically launch the right specialist agent:
+
+| Phase completed | Agent spawned | Hook |
+|----------------|---------------|------|
+| Plan / Research | **architect** — evaluates architectural soundness before implementation | `gate-architect-after-plan.js` |
+| Execution | **code-reviewer** — reviews code quality, security, maintainability | `gate-code-review-after-execute.js` |
+| Before commit | **security-reviewer** — scans for secrets, injection, OWASP issues | `gate-security-before-commit.js` |
+| Any significant work | **skill-from-chat** reminder — captures reusable patterns as skills | `skill-capture-reminder.js` |
+
+**Context budget awareness** — The `gsd-context-monitor` PostToolUse hook tracks context window usage and injects warnings at 35% remaining (wrap up) and 25% remaining (stop and save state), so sessions don't silently die.
+
 ## What's here
 
 | Directory | What |
