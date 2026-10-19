@@ -1,3 +1,8 @@
+---
+description: Generate domain-specific skills from this project's configs and conventions
+argument-hint: <domain>
+---
+
 # Skill For Domain — Domain-Specific Skill Generator
 
 Generate skills tailored to a specific domain by reading project configs and conventions.

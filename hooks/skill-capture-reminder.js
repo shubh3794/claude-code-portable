@@ -31,7 +31,7 @@ process.stdin.on('end', () => {
       process.exit(0);
     }
 
-    const cwd = process.cwd();
+    const cwd = data.cwd || process.cwd();
     let shouldRemind = false;
     let reason = '';
 
@@ -42,7 +42,7 @@ process.stdin.on('end', () => {
       const ageMinutes = (Date.now() - mtime.getTime()) / 60000;
       if (ageMinutes < 30) {
         shouldRemind = true;
-        reason = 'GSD phase state was updated this session';
+        reason = 'planning state was updated this session';
       }
     }
 
@@ -74,9 +74,7 @@ process.stdin.on('end', () => {
 
     const output = {
       systemMessage:
-        `SKILL CAPTURE REMINDER: ${reason}. ` +
-        'This session contained a multi-step workflow. ' +
-        'Suggest to the user: "This session had significant work — want me to run /skill-from-chat to capture reusable patterns?"'
+        `Skill capture: ${reason}. Run /skill-from-chat to turn this workflow into a reusable skill.`
     };
 
     process.stdout.write(JSON.stringify(output));

@@ -72,9 +72,8 @@ process.stdin.on('end', () => {
     const domainList = domains.map(d => `/skill-for ${d}`).join(', ');
     const output = {
       systemMessage:
-        `SKILL BOOTSTRAP REMINDER: This project lists ${domains.length} domain skills to generate ` +
-        `but .claude/skills/ has no SKILL.md files yet. Suggest to the user: ` +
-        `"Want me to bootstrap domain skills? I can run: ${domainList}"`
+        `Skill bootstrap: CLAUDE.md lists ${domains.length} domain skills but .claude/skills/ is empty. ` +
+        `Run: ${domainList}`
     };
 
     process.stdout.write(JSON.stringify(output));

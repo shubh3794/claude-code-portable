@@ -1,0 +1,11 @@
+{
+  "name": "shubh3794",
+  "owner": { "name": "shubh3794" },
+  "plugins": [
+    {
+      "name": "portable",
+      "source": "./",
+      "description": "Skill-capture reminders, skill-creation commands, and Go/Python/CUDA/Java skills."
+    }
+  ]
+}

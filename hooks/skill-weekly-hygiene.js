@@ -48,9 +48,7 @@ process.stdin.on('end', () => {
 
     const output = {
       systemMessage:
-        'SKILL HYGIENE REMINDER: It\'s Friday. Run `/skill-watch` to scan shell history, ' +
-        'git log, and CLAUDE.md for patterns that haven\'t been captured as skills yet. ' +
-        'Suggest this to the user at a natural pause point.'
+        'Skill hygiene: it\'s Friday. Run /skill-watch to find repeated workflows that aren\'t skills yet.'
     };
 
     process.stdout.write(JSON.stringify(output));
