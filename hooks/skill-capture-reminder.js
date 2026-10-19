@@ -1,9 +1,8 @@
 #!/usr/bin/env node
-// Stop hook: remind Claude to suggest /skill-from-chat after significant work
+// Stop hook: remind the user to run /skill-from-chat after significant work
 //
-// Fires after each Claude response. Checks two signals:
-// 1. GSD phase completion — .planning/STATE.md was modified this session
-// 2. Significant code changes — git diff shows 50+ lines changed
+// Fires after each Claude response. Signal: 50+ lines inserted across
+// uncommitted changes plus commits from the last 2 hours.
 //
 // Uses a session-scoped flag file to avoid repeating the reminder.
 
@@ -31,38 +30,23 @@ process.stdin.on('end', () => {
       process.exit(0);
     }
 
-    const cwd = process.cwd();
+    const cwd = data.cwd || process.cwd();
     let shouldRemind = false;
     let reason = '';
 
-    // Signal 1: GSD state file modified in last 30 minutes
-    const stateFile = path.join(cwd, '.planning', 'STATE.md');
-    if (fs.existsSync(stateFile)) {
-      const mtime = fs.statSync(stateFile).mtime;
-      const ageMinutes = (Date.now() - mtime.getTime()) / 60000;
-      if (ageMinutes < 30) {
+    try {
+      const opts = { encoding: 'utf8', timeout: 5000, cwd, windowsHide: true };
+      const sumInsertions = out => [...out.matchAll(/(\d+) insertions?/g)]
+        .reduce((n, m) => n + parseInt(m[1]), 0);
+      const lines =
+        sumInsertions(execSync('git diff --shortstat HEAD 2>/dev/null || true', opts)) +
+        sumInsertions(execSync('git log --since="2 hours ago" --shortstat --format= 2>/dev/null || true', opts));
+      if (lines >= 50) {
         shouldRemind = true;
-        reason = 'GSD phase state was updated this session';
+        reason = `${lines} lines added recently`;
       }
-    }
-
-    // Signal 2: Significant code changes (50+ lines)
-    if (!shouldRemind) {
-      try {
-        const diffStat = execSync('git diff --stat HEAD~1 2>/dev/null || git diff --stat 2>/dev/null', {
-          encoding: 'utf8',
-          timeout: 5000,
-          cwd: cwd,
-          windowsHide: true
-        });
-        const match = diffStat.match(/(\d+) insertions?/);
-        if (match && parseInt(match[1]) >= 50) {
-          shouldRemind = true;
-          reason = `${match[1]} lines of insertions detected`;
-        }
-      } catch (e) {
-        // git not available or no commits, skip
-      }
+    } catch (e) {
+      // git not available, skip
     }
 
     if (!shouldRemind) {
@@ -74,9 +58,7 @@ process.stdin.on('end', () => {
 
     const output = {
       systemMessage:
-        `SKILL CAPTURE REMINDER: ${reason}. ` +
-        'This session contained a multi-step workflow. ' +
-        'Suggest to the user: "This session had significant work — want me to run /skill-from-chat to capture reusable patterns?"'
+        `Skill capture: ${reason}. Run /skill-from-chat to turn this workflow into a reusable skill.`
     };
 
     process.stdout.write(JSON.stringify(output));

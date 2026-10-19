@@ -1,3 +1,7 @@
+---
+description: Capture the workflow from this conversation as a reusable skill
+---
+
 # Skill From Chat — Capture Current Conversation as a Skill
 
 Analyze the conversation history in this session and extract a reusable skill from it.
@@ -41,14 +45,14 @@ Ask if I want to:
 - Generate more test cases
 
 ## Output Location
-Save the generated skill to: `/home/claude/generated-skills/<skill-name>/`
-Then show me how to install it:
-```bash
-cp -r /home/claude/generated-skills/<skill-name> ~/.claude/skills/
-```
+After I approve, write the skill directly:
+- Project-specific (domain, repo conventions) → `.claude/skills/<skill-name>/` in the current project
+- Cross-project → `skills/<skill-name>/` in my claude-code-portable repo, so it ships with the plugin
+
+Keep the `description` to 1–3 lines: it is loaded into every session.
 
 ## Quality Checks
-- Trigger description includes 5+ realistic user phrases
+- Description says when to use it in 1–3 lines (no long trigger-phrase lists)
 - Instructions are imperative, not explanatory
 - Scripts are idempotent and safe to re-run
 - No hardcoded secrets or environment-specific paths

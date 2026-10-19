@@ -1,0 +1,7 @@
+{
+  "name": "portable",
+  "version": "2.0.0",
+  "description": "Skill-capture reminders, skill-creation commands, and Go/Python/CUDA/Java skills.",
+  "author": { "name": "shubh3794" },
+  "repository": "https://github.com/shubh3794/claude-code-portable"
+}

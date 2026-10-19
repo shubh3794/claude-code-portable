@@ -1,3 +1,7 @@
+---
+description: Scan shell history, git log and CLAUDE.md for workflows worth turning into skills
+---
+
 # Skill Watch — Proactive Pattern Scanner
 
 Scan my recent workflow patterns and propose contextual skills I should create.

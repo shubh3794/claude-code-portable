@@ -1,15 +1,6 @@
 ---
 name: skill-builder-agent
-description: >
-  Autonomous skill factory that monitors your Claude Code workflow patterns and generates
-  contextual, job-specific skills on the fly. Use this skill whenever the user says things like
-  "create a skill from what we just did", "turn this into a reusable workflow", "I keep doing this
-  pattern", "automate this process", "build me a skill for X", "watch what I do and make it
-  repeatable", "skill builder", "generate a skill", or when you notice the user repeating a
-  multi-step workflow 2+ times. Also trigger when the user asks to "monitor my workflow",
-  "learn from my patterns", "make this a command", or wants to capture tribal knowledge into
-  a portable skill. This goes beyond the basic skill-creator by actively mining conversation
-  history, CLAUDE.md lessons, git history, and shell history to propose skills proactively.
+description: Generate a reusable Claude Code skill from a repeated workflow, conversation, or shell/git history. Use when asked to create, capture or improve a skill.
 ---
 
 # Skill Builder Agent — Contextual Skill Factory
