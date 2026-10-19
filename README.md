@@ -10,8 +10,13 @@ plan → execute → review workflow.
 /plugin marketplace add obra/superpowers-marketplace
 /plugin install superpowers@superpowers-marketplace
 
-/plugin marketplace add shubh3794/claude-code-portable
-/plugin install portable@shubh3794
+/plugin install portable --marketplace shubh3794/claude-code-portable
+```
+
+Product skills (discovery, user research, strategy) are a separate plugin — install them per project:
+
+```
+/plugin install product --marketplace shubh3794/claude-code-portable --scope project
 ```
 
 Optional statusline (model │ dir │ context used %), in `~/.claude/settings.json`:
@@ -28,6 +33,7 @@ Optional statusline (model │ dir │ context used %), in `~/.claude/settings.j
 | `commands/` | `/skill-from-chat`, `/skill-for <domain>`, `/skill-watch` |
 | `skills/` | `go`, `python`, `cuda`, `java`, `docker-patterns`, `postgres-patterns`, `skill-builder-agent` |
 | `statusline.js` | Context usage at a glance |
+| `plugins/product/` | Separate plugin: 32 product discovery / user research / strategy skills + 13 commands, from [phuryn/pm-skills](https://github.com/phuryn/pm-skills) (MIT) |
 
 ## Where skills go
 

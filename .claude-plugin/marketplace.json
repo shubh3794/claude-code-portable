@@ -1,11 +1,19 @@
 {
   "name": "shubh3794",
-  "owner": { "name": "shubh3794" },
+  "owner": {
+    "name": "shubh3794"
+  },
   "plugins": [
     {
       "name": "portable",
       "source": "./",
       "description": "Skill-capture reminders, skill-creation commands, and Go/Python/CUDA/Java skills."
+    },
+    {
+      "name": "product",
+      "source": "./plugins/product",
+      "description": "Product discovery, user research and product strategy skills (from phuryn/pm-skills)."
     }
-  ]
+  ],
+  "description": "shubh3794's Claude Code plugins"
 }
